@@ -37,7 +37,7 @@ This script requires **Tampermonkey**.
 
 2.  **Install the Script:**
 
-    * Click on the raw code file: [`userscript.js`](https://github.com/Ahmd-Tint/GeoFS-SPLR-ARM-AUTO-BRK/raw/main/userscript.js)
+    * Click [`here`](https://github.com/Ahmd-Tint/GeoFS-SPLR-ARM-AUTO-BRK/raw/main/main.user.js)
 
     * Tampermonkey will open a new tab prompting you to install the script.
 
@@ -68,4 +68,4 @@ This project is released under the **Creative Commons Attribution-NoDerivatives 
 ## 📜 Script Code
 
 
-The script code is contained within the `userscript.js` file.
+The script code is contained within the `main.user.js` file.
