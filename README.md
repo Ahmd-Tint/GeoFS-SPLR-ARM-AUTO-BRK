@@ -15,8 +15,6 @@ This script ensures your **Spoilers** deploy and your **Brakes** engage the mome
 
 | Feature | Shortcut | Activation | Description |
 
-| :--- | :--- | :--- | :--- |
-
 | **Spoiler Arm** | <kbd>Shift</kbd> + <kbd>/</kbd> | On Touchdown | Toggles the arming state of the spoilers. Once armed, the airbrakes will automatically deploy to max setting when the aircraft detects **ground contact**. |
 
 | **Auto Brake** | <kbd>Ctrl</kbd> + <kbd>F11</kbd> | On Touchdown | Toggles the Auto Brake system. Once armed, full brakes will be automatically applied when the aircraft detects **ground contact**. |
@@ -28,18 +26,18 @@ This script ensures your **Spoilers** deploy and your **Brakes** engage the mome
 ## 🚀 Installation
 
 
-This script requires a user script manager like **Tampermonkey** (recommended for Chrome/Firefox/Edge) or **Greasemonkey**.
+This script requires **Tampermonkey**.
 
 
 1.  **Install Tampermonkey:** Get the extension for your browser.
 
-    * [Chrome Extension](https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo)
+    * [Tampermonkey for Chrome]([https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo](https://www.tampermonkey.net/index.php?browser=chrome&locale=en))
 
-    * [Firefox Add-on](https://addons.mozilla.org/en-US/firefox/addon/tampermonkey/)
+    * [Tampermonkey for Edge]([https://addons.mozilla.org/en-US/firefox/addon/tampermonkey/](https://www.tampermonkey.net/index.php?browser=edge&locale=en))
 
 2.  **Install the Script:**
 
-    * Click on the raw code file: [`geofs-landing-assists.user.js`](https://github.com/YOUR_USERNAME/GeoFS-Landing-Assists/raw/main/geofs-landing-assists.user.js) (Replace `YOUR_USERNAME` with your actual GitHub username).
+    * Click on the raw code file: [`userscript.js`](https://github.com/Ahmd-Tint/GeoFS-SPLR-ARM-AUTO-BRK/raw/main/userscript.js)
 
     * Tampermonkey will open a new tab prompting you to install the script.
 
@@ -70,4 +68,4 @@ This project is released under the **Creative Commons Attribution-NoDerivatives 
 ## 📜 Script Code
 
 
-The script code is contained within the `geofs-landing-assists.user.js` file.
+The script code is contained within the `userscript.js` file.
