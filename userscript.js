@@ -2,6 +2,8 @@
 // @name          SPLR ARM & AUTO BRK
 // @namespace     https://github.com/Ahmd-Tint/GeoFS-SPLR-ARM-AUTO-BRK
 // @match         https://*.geo-fs.com/*
+// @updateURL     https://github.com/Ahmd-Tint/GeoFS-SPLR-ARM-AUTO-BRK/raw/refs/heads/main/userscript.js
+// @downloadURL   https://github.com/Ahmd-Tint/GeoFS-SPLR-ARM-AUTO-BRK/raw/refs/heads/main/userscript.js
 // @grant         none
 // @version       1
 // @author        Ahmd-Tint
