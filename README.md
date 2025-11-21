@@ -65,7 +65,6 @@ This project is released under the **Creative Commons Attribution-NoDerivatives 
 ---
 
 
-## 📜 Script Code
+## Need help?
 
-
-The script code is contained within the `main.user.js` file.
+Please contact me through Discord. Discord server: https://discord.gg/MF5M5cAuS3
