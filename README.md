@@ -31,9 +31,9 @@ This script requires **Tampermonkey**.
 
 1.  **Install Tampermonkey:** Get the extension for your browser.
 
-    * [Tampermonkey for Chrome]([https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo](https://www.tampermonkey.net/index.php?browser=chrome&locale=en))
+    * [Tampermonkey for Chrome](https://www.tampermonkey.net/index.php?browser=chrome&locale=en)
 
-    * [Tampermonkey for Edge]([https://addons.mozilla.org/en-US/firefox/addon/tampermonkey/](https://www.tampermonkey.net/index.php?browser=edge&locale=en))
+    * [Tampermonkey for Edge](https://www.tampermonkey.net/index.php?browser=edge&locale=en)
 
 2.  **Install the Script:**
 
