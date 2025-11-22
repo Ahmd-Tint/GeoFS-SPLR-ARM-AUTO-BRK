@@ -5,128 +5,158 @@
 // @updateURL     https://github.com/Ahmd-Tint/GeoFS-SPLR-ARM-AUTO-BRK/raw/refs/heads/main/main.user.js
 // @downloadURL   https://github.com/Ahmd-Tint/GeoFS-SPLR-ARM-AUTO-BRK/raw/refs/heads/main/main.user.js
 // @grant         none
-// @version       1
+// @version       3
 // @author        Ahmd-Tint
-// @description   ARM/DISARM SPLR && AUTO BRK. For GeoFS.
+// @description   Spoiler ARM/DISARM + Auto Brake with full mode cycling (RTO, DISARM, 1, 2, 3, 4, MAX)
 // ==/UserScript==
 
-(function() {
+(function () {
     'use strict';
 
-    // Global state trackers
+    // AUTOBRAKE MODES
+    const autoBrakeModes = ["RTO", "DISARM", "1", "2", "3", "4", "MAX"];
+    let autoBrakeIndex = 0; // default = RTO
+
     let isAutoBrakeArmed = true;
 
-    // --- Utility Functions ---
-    // A simple function to safely show a notification, checking for reliable paths.
-    function showNotification(message, type = 'info', timeout = 3000) {
-        if (window.geofs && window.geofs.utils && window.geofs.utils.notification) {
-            window.geofs.utils.notification.show(message, { timeout: timeout, type: type });
-        } else if (window.ui && window.ui.notification) {
-            window.ui.notification.show(message, { timeout: timeout, type: type });
+    // RTO LATCH FLAG
+    let rtoActive = false;
+
+    // NOTIFICATION
+    function showNotification(msg, type = "info", timeout = 3000) {
+        if (window.geofs?.utils?.notification) {
+            window.geofs.utils.notification.show(msg, { timeout, type });
+        } else if (window.ui?.notification) {
+            window.ui.notification.show(msg, { timeout, type });
         }
     }
 
-    // Function to wait for the core GeoFS environment to be fully ready
+    // WAIT FOR GEOFS LOADING
     async function waitForGeoFS() {
         return new Promise(resolve => {
-            const intervalId = setInterval(() => {
-                if (window.geofs && window.geofs.aircraft && window.geofs.aircraft.instance && window.controls) {
-                    clearInterval(intervalId);
+            const interval = setInterval(() => {
+                if (window.geofs?.aircraft?.instance && window.controls) {
+                    clearInterval(interval);
                     resolve();
                 }
             }, 200);
         });
     }
 
-    // --- 1. Spoiler Arm Toggle Function (Shift + /) ---
+    // SPOILER ARM TOGGLE
     const toggleSpoilerArm = () => {
-        const instance = geofs.aircraft.instance;
+        const inst = geofs.aircraft.instance;
+        if (inst.animationValue.spoilerArming === undefined)
+            inst.animationValue.spoilerArming = 0;
 
-        // --- FIX 1: Initialize property if it does not exist ---
-        // This prevents the script from failing if the aircraft doesn't have it set up by default.
-        if (instance.animationValue.spoilerArming === undefined) {
-             instance.animationValue.spoilerArming = 0; // Initialize to 0 (disarmed)
-        }
+        inst.animationValue.spoilerArming ^= 1;
 
-        // Use the explicit object path found in your uploaded file (autoland++.txt)
-        const spoilerArmingValue = instance.animationValue.spoilerArming;
-
-        // Toggle the value (0 to 1, or 1 to 0)
-        instance.animationValue.spoilerArming = spoilerArmingValue === 0 ? 1 : 0;
-
-        const isArmed = instance.animationValue.spoilerArming === 1;
-
-        // Show notification for user feedback (guaranteed to fire now)
-        showNotification(`Spoiler Arm: ${isArmed ? 'ARMED' : 'DISARMED'} (Shift + /)`);
-        console.log(`[SPLR ARM] Toggled: ${isArmed ? 'ARMED' : 'DISARMED'}`);
+        showNotification(
+            `Spoiler Arm: ${inst.animationValue.spoilerArming ? "ARMED" : "DISARMED"} (Shift + /)`
+        );
     };
 
-    // --- 2. Auto Brake Toggle Function (Ctrl + F11) ---
+    // AUTOBRAKE MODE CYCLE
     const toggleAutoBrake = () => {
-        isAutoBrakeArmed = !isAutoBrakeArmed;
+        autoBrakeIndex = (autoBrakeIndex + 1) % autoBrakeModes.length;
+        const mode = autoBrakeModes[autoBrakeIndex];
 
-        // Show notification for user feedback
-        showNotification(`Auto Brake: ${isAutoBrakeArmed ? 'ARMED' : 'DISARMED'} (Ctrl + F11)`);
-        console.log(`[AUTO BRK] Toggled: ${isAutoBrakeArmed ? 'ARMED' : 'DISARMED'}`);
+        isAutoBrakeArmed = mode !== "DISARM";
+
+        // When switching to DISARM, release RTO latch
+        if (!isAutoBrakeArmed) rtoActive = false;
+
+        showNotification(`Auto Brake: ${mode} (Ctrl + F11)`);
+        console.log(`[AUTO BRK] Mode = ${mode}`);
     };
 
-    // --- 3. Touchdown Logic (Spoiler Deployment & Auto Brake Application) ---
+    // MAIN AUTOBRAKE + SPOILER LOGIC
     const checkTouchdownLogic = () => {
-        if (!geofs.aircraft || !geofs.aircraft.instance) return;
+        const inst = geofs.aircraft.instance;
 
-        const instance = geofs.aircraft.instance;
-
-        // The core requirement is that deployment/application only happens on ground contact.
-        if (instance.groundContact) {
-
-            // --- Spoiler Deployment ---
-            // Check if spoilers are armed (1) and airbrakes are not yet fully deployed (0)
-            if (instance.animationValue.spoilerArming === 1 && controls.airbrakes.position === 0) {
-                controls.airbrakes.target = 1;      // Full deployment
-                controls.airbrakes.delta = 0.5;
-                instance.animationValue.spoilerArming = 0; // Disarm after deployment
-                console.log('[SPLR ARM] Spoilers deployed on touchdown.');
-            }
-
-            // --- Auto Brake Application ---
-            if (isAutoBrakeArmed) {
-                controls.brakes = 1; // Apply full brakes
-                console.log('[AUTO BRK] Brakes applied on touchdown.');
-            }
-        } else {
-            // Airborne state: ensure brakes are off
-            controls.brakes = 0;
+        // -------------------------------
+        // AIRBORNE
+        // -------------------------------
+        if (!inst.groundContact) {
+            if (isAutoBrakeArmed) controls.brakes = 0; // reset only if auto brake is armed
+            return;
         }
+
+        // -------------------------------
+        // DISARM MODE → MANUAL BRAKING
+        // -------------------------------
+        if (!isAutoBrakeArmed) {
+            return; // do not touch brakes, allow pilot full control
+        }
+
+        const mode = autoBrakeModes[autoBrakeIndex];
+        let brakeAmount = 0;
+
+        // -------------------------------
+        // RTO MODE WITH REALISTIC BEHAVIOR
+        // -------------------------------
+        if (mode === "RTO") {
+
+            // TRIGGER RTO IF THRUST → IDLE at >36 m/s
+            if (
+                !rtoActive &&
+                inst.groundSpeed > 36 &&             // >70 knots
+                inst.totalThrust < 6375 &&          // throttle pulled idle
+                inst.groundContact
+            ) {
+                rtoActive = true;
+                console.log("[AUTO BRK] RTO ACTIVATED");
+            }
+
+            // HOLD MAX BRAKES IF ACTIVE
+            if (rtoActive) {
+                brakeAmount = 1;
+
+                // RELEASE RTO BELOW 8 m/s
+                if (inst.groundSpeed < 8) {
+                    rtoActive = false;
+                    console.log("[AUTO BRK] RTO RELEASED");
+                }
+            }
+        }
+
+        // -------------------------------
+        // NORMAL MODES 1–MAX
+        // -------------------------------
+        if (!rtoActive) {
+            switch (mode) {
+                case "1": brakeAmount = 0.20; break;
+                case "2": brakeAmount = 0.35; break;
+                case "3": brakeAmount = 0.50; break;
+                case "4": brakeAmount = 0.75; break;
+                case "MAX": brakeAmount = 1.00; break;
+            }
+        }
+
+        controls.brakes = brakeAmount;
     };
 
-    // --- 4. Initialize Script ---
-    async function initShortcuts() {
+    // INIT
+    async function init() {
         await waitForGeoFS();
 
-        // Set up interval for touchdown logic
         setInterval(checkTouchdownLogic, 100);
 
-        // Set up keyboard event listener
-        document.addEventListener('keydown', function(event) {
-
-            // --- FIX 2: Check for '?' key which is the result of Shift + / on most US keyboards ---
-            // We check for both '?' and the physical key code (191) for maximum compatibility.
-            if (event.shiftKey && (event.key === '?' || event.keyCode === 191)) {
-                event.preventDefault();
+        document.addEventListener("keydown", e => {
+            if (e.shiftKey && (e.key === "?" || e.keyCode === 191)) {
+                e.preventDefault();
                 toggleSpoilerArm();
             }
 
-            // Toggle Auto Brake: Ctrl + F11
-            if (event.ctrlKey && event.key === 'F11') {
-                event.preventDefault();
+            if (e.ctrlKey && e.key === "F11") {
+                e.preventDefault();
                 toggleAutoBrake();
             }
         });
 
-        console.log('[SPLR ARM & AUTO BRK Script] Loaded. Press Shift + / and Ctrl + F11.');
-        showNotification("SPLR ARM & AUTO BRK Script Loaded!", 'info', 4000);
+        showNotification("SPLR ARM & AUTO BRK Loaded!", "info", 4000);
+        console.log("[SCRIPT] Full realistic system online.");
     }
 
-    initShortcuts();
-
+    init();
 })();
