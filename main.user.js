@@ -158,9 +158,6 @@
 
         controls.brakes = brakeAmount;
 
-        // -----------------------------------------------------
-        // AUTOLAND++ SPOILER DEPLOYMENT LOGIC (MERGED)
-        // -----------------------------------------------------
         if (
             inst.animationValue.spoilerArming === 1 &&
             inst.groundContact
