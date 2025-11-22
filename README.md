@@ -35,10 +35,10 @@ This script requires **Tampermonkey**.
 
 ## ⚙️ Usage Notes
 
-- **RTO Mode:** Realistic rejected takeoff logic. Brakes **latch at MAX** until aircraft slows to ~8 m/s (~16 knots, ~29 kilometers per hour, or ~18 miles per hour).
-- **DISARM Mode:** Auto brakes are disabled. Pilot can brake manually **without interference**.
+- **RTO Mode:** Realistic rejected takeoff logic. Brakes **latch at MAX** until aircraft slows to ~0 m/s (~0 knots, ~0 kilometers per hour, or ~0 miles per hour).
+- **DISARM Mode:** Auto brakes are disabled. Pilot can brake manually **without interference**. Even hold the parking brake.
 - **Auto Brake Levels 1–MAX:** Apply predefined braking levels automatically on touchdown.
-- **Spoilers:** Only deploy when armed and aircraft touches the ground. Disarm automatically after deployment.
+- **Spoilers:** Only deploy when armed and aircraft touches the ground.
 
 ---
 
@@ -56,4 +56,12 @@ This project is released under the **Creative Commons Attribution-NoDerivatives 
 ## ❓ Need Help?
 
 Contact me via Discord: [Discord Server](https://discord.gg/MF5M5cAuS3)
+
+## Changelogs
+
+* V1: Initial Release (GeoFS is missing the features this addon includes, that's why it was made)
+* V2.2 Added levels of braking. (Speedbird came up with this realistic idea!)
+* V3.3: Instead of notifications, added the following. "RTO" changes depending on the current auto-brake mode. (Speedbird came up with this realistic idea!)
+<img width="66" height="115" alt="image" src="https://github.com/user-attachments/assets/a67db3ac-cef9-41d7-baf7-601a3ded2ee2" />
+
 
