@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name          AUTO BRK LVL
+// @name          SPLR ARM & AUTO BRK
 // @namespace     http://tampermonkey.net/
 // @match         https://*.geo-fs.com/*
 // @updateURL     https://github.com/Ahmd-Tint/GeoFS-SPLR-ARM-AUTO-BRK/raw/refs/heads/main/main.user.js
@@ -7,7 +7,7 @@
 // @grant         none
 // @version       2.2
 // @author        Ahmd-Tint
-// @description   Auto Brake with full mode cycling (RTO, DISARM, 1, 2, 3, 4, MAX) Thanks to Speedbird for suggesting brake levels. Publishing an edited version of this is not allowed. This is a separate version of This is a separate version of https://github.com/Ahmd-Tint/GeoFS-SPLR-ARM-AUTO-BRK
+// @description   Spoiler ARM/DISARM + Auto Brake with full mode cycling (RTO, DISARM, 1, 2, 3, 4, MAX) Thanks to Speedbird for suggesting brake levels. Publishing an edited version of this is not allowed.
 // ==/UserScript==
 
 (function () {
@@ -42,6 +42,19 @@
             }, 200);
         });
     }
+
+    // SPOILER ARM TOGGLE
+    const toggleSpoilerArm = () => {
+        const inst = geofs.aircraft.instance;
+        if (inst.animationValue.spoilerArming === undefined)
+            inst.animationValue.spoilerArming = 0;
+
+        inst.animationValue.spoilerArming ^= 1;
+
+        showNotification(
+            `Spoiler Arm: ${inst.animationValue.spoilerArming ? "ARMED" : "DISARMED"} (Shift + /)`
+        );
+    };
 
     // AUTOBRAKE MODE CYCLE
     const toggleAutoBrake = () => {
@@ -130,6 +143,10 @@
         setInterval(checkTouchdownLogic, 100);
 
         document.addEventListener("keydown", e => {
+            if (e.shiftKey && (e.key === "?" || e.keyCode === 191)) {
+                e.preventDefault();
+                toggleSpoilerArm();
+            }
 
             if (e.ctrlKey && e.key === "F11") {
                 e.preventDefault();
@@ -137,7 +154,7 @@
             }
         });
 
-        showNotification("AUTO BRK LVL Loaded!", "info", 4000);
+        showNotification("SPLR ARM & AUTO BRK Loaded!", "info", 4000);
         console.log("[SCRIPT] Full realistic system online.");
     }
 
