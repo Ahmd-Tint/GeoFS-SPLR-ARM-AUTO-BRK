@@ -5,7 +5,7 @@
 // @updateURL     https://github.com/Ahmd-Tint/GeoFS-SPLR-ARM-AUTO-BRK/raw/main/main.user.js
 // @downloadURL   https://github.com/Ahmd-Tint/GeoFS-SPLR-ARM-AUTO-BRK/raw/main/main.user.js
 // @grant         none
-// @version       3
+// @version       2.1
 // @author        Ahmd-Tint
 // @description   Spoiler ARM/DISARM + Auto Brake with full mode cycling (RTO, DISARM, 1, 2, 3, 4, MAX) Thanks to Speedbird for suggesting brake levels. Publishing an edited version of this is not allowed.
 // ==/UserScript==
