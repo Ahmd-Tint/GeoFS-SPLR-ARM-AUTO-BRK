@@ -83,5 +83,6 @@ Contact me via Discord: [Discord Server](https://discord.gg/MF5M5cAuS3)
 * V2.2 Added levels of braking. (Speedbird came up with this realistic idea!)
 * V3.3: Instead of notifications, added the following. "RTO" changes depending on the current auto-brake mode. (Speedbird came up with this realistic idea!)
 <img width="66" height="115" alt="image" src="https://github.com/user-attachments/assets/a67db3ac-cef9-41d7-baf7-601a3ded2ee2" />
+* V4.3: The default brake force is now the B737-700 setting when an unsupported aircraft is used.
 
 
