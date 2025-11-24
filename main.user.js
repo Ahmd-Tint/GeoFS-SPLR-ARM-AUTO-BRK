@@ -143,16 +143,18 @@
             }
         }
 
-        // -------------------------------
+        /* -------------------------------
         // NORMAL MODES 1–MAX
-        // -------------------------------
+        */// -------------------------------
+        // Boeing 737-700 Brake Force
+        // Not "1" anymore, because that's unrealistic. Hoping for GeoFS to use brakeAmount in a unit like PSI. Not saying that the current one is bad but is still good.
         if (!rtoActive) {
             switch (mode) {
-                case "1": brakeAmount = 0.20; break;
-                case "2": brakeAmount = 0.35; break;
-                case "3": brakeAmount = 0.50; break;
-                case "4": brakeAmount = 0.75; break;
-                case "MAX": brakeAmount = 1.00; break;
+                case "1": brakeAmount = 1.19; break;
+                case "2": brakeAmount = 1.49; break;
+                case "3": brakeAmount = 2.15; break;
+                case "4": brakeAmount = 2.99; break;
+                case "MAX": brakeAmount = 4.19; break;
             }
         }
 
