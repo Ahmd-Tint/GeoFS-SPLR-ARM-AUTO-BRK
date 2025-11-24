@@ -15,6 +15,26 @@ It ensures your **spoilers** deploy and your **brakes** engage the moment your w
 
 ---
 
+# GeoFS Real-World Autobrake Add-on
+
+This add-on dynamically modifies the brake forces within GeoFS to simulate the authentic autobrake system behavior and strength of specific real-world commercial airliners.
+
+---
+
+## :airplane: Currently Supported Aircraft
+
+The add-on automatically detects which aircraft you are flying and applies its corresponding IRL brake force settings and deceleration logic.
+---
+ * Boeing 737-700, ID: 4
+---
+If you are using an unsupported aircraft model in GeoFS (e.g., Airbus A350), the add-on defaults to the B737-700 settings. (Brake Strength)
+
+# 💬 Suggestions & Feedback
+If you would like to suggest adding authentic brake forces for another aircraft model, please join our [Discord Server](https://discord.gg/MF5M5cAuS3).
+We welcome suggestions to expand the realism of this add-on!
+
+---
+
 ## 🚀 Installation
 
 This script requires **Tampermonkey**.
