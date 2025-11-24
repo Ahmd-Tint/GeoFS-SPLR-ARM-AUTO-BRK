@@ -77,7 +77,7 @@ This project is released under the **Creative Commons Attribution-NoDerivatives 
 
 Contact me via Discord: [Discord Server](https://discord.gg/MF5M5cAuS3)
 
-## Changelogs
+## Changelogs (for nerds only)
 
 * V1: Initial Release (GeoFS is missing the features this addon includes, that's why it was made)
 * V2.2 Added levels of braking. (Speedbird came up with this realistic idea!)
