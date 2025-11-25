@@ -25,9 +25,12 @@ This add-on dynamically modifies the brake forces within GeoFS to simulate the a
 
 The add-on automatically detects which aircraft you are flying and applies its corresponding IRL brake force settings and deceleration logic.
 ---
- * Boeing 737-700, ID: 4
+ * Boeing 737-700
+ * Boeing 777-300ER
+ * Airbus A350-900
+ * Airbus A380-800
 ---
-If you are using an unsupported aircraft model in GeoFS (e.g., Airbus A350), the add-on defaults to the B737-700 settings. (Brake Strength)
+If you are using an unsupported aircraft model in GeoFS (e.g., Concorde), the add-on defaults to the settings of the Airbus A350-900. (Brake Strength)
 
 # 💬 Suggestions & Feedback
 If you would like to suggest adding authentic brake forces for another aircraft model, please join our [Discord Server](https://discord.gg/MF5M5cAuS3).
@@ -55,10 +58,10 @@ This script requires **Tampermonkey**.
 
 ## ⚙️ Usage Notes
 
-- **RTO Mode:** Realistic rejected takeoff logic. Brakes **latch at MAX** until aircraft slows to ~0 m/s (~0 knots, ~0 kilometers per hour, or ~0 miles per hour).
-- **DISARM Mode:** Auto brakes are disabled. Pilot can brake manually **without interference**. Even hold the parking brake.
+- **RTO Mode:** Realistic rejected takeoff logic. Brakes **latch at MAX** until aircraft slows to ~1 m/s
+- **DISARM Mode:** Auto brakes are disabled. Pilot can brake ** manually without interference**.
 - **Auto Brake Levels 1–MAX:** Apply predefined braking levels automatically on touchdown.
-- **Spoilers:** Only deploy when armed and aircraft touches the ground.
+- **Spoilers:** Only deploy when armed and the aircraft touches the ground.
 
 ---
 
