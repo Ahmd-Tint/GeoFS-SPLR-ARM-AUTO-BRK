@@ -5,7 +5,7 @@
 // @updateURL     https://github.com/Ahmd-Tint/GeoFS-SPLR-ARM-AUTO-BRK/raw/refs/heads/main/main.user.js
 // @downloadURL   https://github.com/Ahmd-Tint/GeoFS-SPLR-ARM-AUTO-BRK/raw/refs/heads/main/main.user.js
 // @grant         none
-// @version       5.3
+// @version       5.4
 // @author        Ahmd-Tint
 // @description   Spoiler ARM/DISARM + Auto Brake with full mode cycling (RTO, DISARM, 1, 2, 3, 4, MAX) Thanks to Speedbird for suggesting brake levels and new visuals. Publishing an edited version of this is not allowed.
 // ==/UserScript==
@@ -123,8 +123,8 @@
             // TRIGGER RTO IF THRUST → IDLE at >36 m/s
             if (
                 !rtoActive &&
-                inst.groundSpeed > 36 &&             // >70 knots
-                inst.totalThrust < 6375 &&          // throttle pulled idle
+                inst.groundSpeed > 44 &&             // >85 knots
+                controls.throttle = 0 &&          // throttle pulled idle
                 inst.groundContact
             ) {
                 rtoActive = true;
@@ -135,8 +135,8 @@
             if (rtoActive) {
                 brakeAmount = 4.19;
 
-                // RELEASE RTO BELOW 0 m/s
-                if (inst.groundSpeed = 0) {
+                // RELEASE RTO BELOW 1m/s
+                if (inst.groundSpeed > 1 {
                     rtoActive = false;
                     console.log("[AUTO BRK] RTO RELEASED");
                 }
