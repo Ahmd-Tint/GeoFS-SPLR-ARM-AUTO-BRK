@@ -5,7 +5,7 @@
 // @updateURL     https://github.com/Ahmd-Tint/GeoFS-SPLR-ARM-AUTO-BRK/raw/refs/heads/main/main.user.js
 // @downloadURL   https://github.com/Ahmd-Tint/GeoFS-SPLR-ARM-AUTO-BRK/raw/refs/heads/main/main.user.js
 // @grant         none
-// @version       5.4
+// @version       6.4
 // @author        Ahmd-Tint
 // @description   Spoiler ARM/DISARM + Auto Brake with full mode cycling (RTO, DISARM, 1, 2, 3, 4, MAX) Thanks to Speedbird for suggesting brake levels and new visuals. Publishing an edited version of this is not allowed.
 // ==/UserScript==
@@ -124,7 +124,7 @@
             if (
                 !rtoActive &&
                 inst.groundSpeed > 44 &&             // >85 knots
-                controls.throttle = 0 &&          // throttle pulled idle
+                controls.throttle === 0 &&          // throttle pulled idle
                 inst.groundContact
             ) {
                 rtoActive = true;
@@ -133,28 +133,76 @@
 
             // HOLD MAX BRAKES IF ACTIVE
             if (rtoActive) {
-                brakeAmount = 4.19;
-
+                if (geofs.aircraft.instance.id === "4") {
+                    brakeAmount = 4.19;
+                }
+                if (geofs.aircraft.instance.id === "25") {
+                    brakeAmount = 3.3;
+                }
+                if (geofs.aircraft.instance.id === "24") {
+                    brakeAmount = 2.5;
+                }
+                if (geofs.aircraft.instance.id === "10") {
+                    brakeAmount = 2.5;
+                }
+                const ins2ID = geofs.aircraft.instance.id
+            if (ins2ID !== "10" && ins2ID !== "24" && ins2ID !== "25" && ins2ID !== "4") {
+                brakeAmount = 3.3
+            }
                 // RELEASE RTO BELOW 1m/s
-                if (inst.groundSpeed > 1 {
+                if (inst.groundSpeed > 1) {
                     rtoActive = false;
                     console.log("[AUTO BRK] RTO RELEASED");
                 }
             }
         }
 
-        /* -------------------------------
-        // NORMAL MODES 1–MAX
-        */// -------------------------------
-        // Boeing 737-700 Brake Force
-        // Not "1" anymore, because that's unrealistic. Hoping for GeoFS to use brakeAmount in a unit like PSI. Not saying that the current one is bad but is still good.
         if (!rtoActive) {
-            switch (mode) {
-                case "1": brakeAmount = 1.19; break;
-                case "2": brakeAmount = 1.49; break;
-                case "3": brakeAmount = 2.15; break;
-                case "4": brakeAmount = 2.99; break;
-                case "MAX": brakeAmount = 4.19; break;
+            if (geofs.aircraft.instance.id === "4") {
+                switch (mode) {
+                    case "1": brakeAmount = 1.19; break;
+                    case "2": brakeAmount = 1.49; break;
+                    case "3": brakeAmount = 2.15; break;
+                    case "4": brakeAmount = 2.99; break;
+                    case "MAX": brakeAmount = 4.19; break;
+                }
+            }
+            if (geofs.aircraft.instance.id === "25") {
+                switch (mode) {
+                    case "1": brakeAmount = 1.2; break;
+                    case "2": brakeAmount = 1.5; break;
+                    case "3": brakeAmount = 1.8; break;
+                    case "4": brakeAmount = 2.1; break;
+                    case "MAX": brakeAmount = 3.3; break;
+                }
+            }
+            if (geofs.aircraft.instance.id === "24") {
+                switch (mode) {
+                    case "1": brakeAmount = 0; break;
+                    case "2": brakeAmount = 0; break;
+                    case "3": brakeAmount = 1; break;
+                    case "4": brakeAmount = 1.3; break;
+                    case "MAX": brakeAmount = 2.5; break;
+                }
+            }
+            if (geofs.aircraft.instance.id === "10") {
+                switch (mode) {
+                    case "1": brakeAmount = 0; break;
+                    case "2": brakeAmount = 1; break;
+                    case "3": brakeAmount = 1.17; break;
+                    case "4": brakeAmount = 1.74; break;
+                    case "MAX": brakeAmount = 2.5; break;
+                }
+            }
+            const insID = geofs.aircraft.instance.id
+            if (insID !== "10" && insID !== "24" && insID !== "25" && insID !== "4") {
+                switch (mode) {
+                    case "1": brakeAmount = 1.2; break;
+                    case "2": brakeAmount = 1.5; break;
+                    case "3": brakeAmount = 1.8; break;
+                    case "4": brakeAmount = 2.1; break;
+                    case "MAX": brakeAmount = 3.3; break;
+                }
             }
         }
 
