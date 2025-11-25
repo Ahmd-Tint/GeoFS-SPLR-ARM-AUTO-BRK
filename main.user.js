@@ -139,18 +139,15 @@
                 if (geofs.aircraft.instance.id === "25") {
                     brakeAmount = 3.3;
                 }
-                if (geofs.aircraft.instance.id === "24") {
-                    brakeAmount = 2.5;
-                }
-                if (geofs.aircraft.instance.id === "10") {
+                if (geofs.aircraft.instance.id === "24" || geofs.aircraft.instance.id === "10") {
                     brakeAmount = 2.5;
                 }
                 const ins2ID = geofs.aircraft.instance.id
-            if (ins2ID !== "10" && ins2ID !== "24" && ins2ID !== "25" && ins2ID !== "4") {
-                brakeAmount = 3.3
-            }
+                if (ins2ID !== "10" && ins2ID !== "24" && ins2ID !== "25" && ins2ID !== "4") {
+                    brakeAmount = 3.3
+                }
                 // RELEASE RTO BELOW 1m/s
-                if (inst.groundSpeed > 1) {
+                if (inst.groundSpeed < 1) {
                     rtoActive = false;
                     console.log("[AUTO BRK] RTO RELEASED");
                 }
