@@ -86,4 +86,12 @@ Contact me via Discord: [Discord Server](https://discord.gg/MF5M5cAuS3)
 
 * V4.3: The default brake force is now the B737-700 setting when an unsupported aircraft is used.
 * V5.3: Fixed auto-brake RTO brake strength (after rejecting takeoff)
-
+* V6.4:
+  The Auto Brake system now uses unique, tuned brake force values for more aircraft.
+  * **New Supported Aircraft:** Added custom brake profiles for:
+    * **Boeing 777-300ER**
+    * **Airbus A350-900**
+    * **Airbus A380-800**
+  * **Default Brake Force Update:** When flying an aircraft without a specific profile, the system will now default to using the brake force values of the ***Boeing 777-300ER***.
+  * The RTO mode's issues have been improved.
+* 
