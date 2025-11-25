@@ -97,4 +97,8 @@ Contact me via Discord: [Discord Server](https://discord.gg/MF5M5cAuS3)
     * **Airbus A380-800**
   * **Default Brake Force Update:** When flying an aircraft without a specific profile, the system will now default to using the brake force values of the ***Boeing 777-300ER***.
   * The RTO mode's issues have been improved.
-* 
+* V6.5:
+  * **Instrument Visibility Integration:** Overlays now automatically hide/show based on GeoFS instrument panel visibility
+  * When you hide instruments in GeoFS, the custom overlays (SPLR ARM and ABRK) will also hide
+  * When you show instruments again, the overlays reappear if their systems are active
+  
