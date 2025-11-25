@@ -5,7 +5,7 @@
 // @updateURL     https://github.com/Ahmd-Tint/GeoFS-SPLR-ARM-AUTO-BRK/raw/refs/heads/main/main.user.js
 // @downloadURL   https://github.com/Ahmd-Tint/GeoFS-SPLR-ARM-AUTO-BRK/raw/refs/heads/main/main.user.js
 // @grant         none
-// @version       6.4
+// @version       6.5
 // @author        Ahmd-Tint
 // @description   Spoiler ARM/DISARM + Auto Brake with full mode cycling (RTO, DISARM, 1, 2, 3, 4, MAX) Thanks to Speedbird for suggesting brake levels and new visuals. Publishing an edited version of this is not allowed.
 // ==/UserScript==
@@ -47,6 +47,21 @@
                 }
             }, 200);
         });
+    }
+
+    // Check if instruments are visible
+    function areInstrumentsVisible() {
+        try {
+            // Check window.instruments.visible
+            if (window.instruments && typeof window.instruments.visible !== 'undefined') {
+                return window.instruments.visible;
+            }
+            // Fallback: check if instruments exist and are visible
+            return true; // default to visible if we can't determine
+        } catch (e) {
+            console.error("[SPLR/ABRK] Error checking instrument visibility:", e);
+            return true; // default to visible on error
+        }
     }
 
     // SPOILER ARM TOGGLE
@@ -284,7 +299,10 @@
         if (!splrOverlay) return;
         try {
             const inst = geofs.aircraft.instance;
-            if (inst.animationValue.spoilerArming === 1) {
+            const instrumentsVisible = areInstrumentsVisible();
+
+            // Show only if armed AND instruments are visible
+            if (inst.animationValue.spoilerArming === 1 && instrumentsVisible) {
                 splrOverlay.style.display = 'block';
             } else {
                 splrOverlay.style.display = 'none';
@@ -301,7 +319,10 @@
             const mode = autoBrakeModes[autoBrakeIndex];
             abrkOverlay.innerHTML = `ABRK<br/>${mode}`;
 
-            if (mode === "DISARM") {
+            const instrumentsVisible = areInstrumentsVisible();
+
+            // Hide if DISARM OR instruments not visible
+            if (mode === "DISARM" || !instrumentsVisible) {
                 abrkOverlay.style.display = 'none';
             } else {
                 abrkOverlay.style.display = 'block';
@@ -309,6 +330,14 @@
         } catch (e) {
             // ignore
         }
+    }
+
+    // Monitor instrument visibility changes
+    function startVisibilityMonitor() {
+        setInterval(() => {
+            updateSplrOverlay();
+            updateAbrkOverlay();
+        }, 500); // Check every 500ms for visibility changes
     }
 
     // INIT
@@ -332,6 +361,9 @@
         updateSplrOverlay();
         updateAbrkOverlay();
 
+        // Start monitoring visibility
+        startVisibilityMonitor();
+
         // Run the touchdown logic periodically
         setInterval(checkTouchdownLogic, 100);
 
@@ -352,7 +384,7 @@
 
         // Keep the original "loaded" notification
         showNotification("SPLR ARM & AUTO BRK Loaded!", "info", 4000);
-        console.log("[SCRIPT] Full realistic system online. V5.3");
+        console.log("[SCRIPT] Full realistic system online. V6.5");
     }
 
     init();
