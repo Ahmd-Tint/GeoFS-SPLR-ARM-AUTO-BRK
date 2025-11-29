@@ -5,7 +5,7 @@
 // @updateURL     https://github.com/Ahmd-Tint/GeoFS-SPLR-ARM-AUTO-BRK/raw/refs/heads/main/main.user.js
 // @downloadURL   https://github.com/Ahmd-Tint/GeoFS-SPLR-ARM-AUTO-BRK/raw/refs/heads/main/main.user.js
 // @grant         none
-// @version       6.5
+// @version       7.5
 // @author        Ahmd-Tint
 // @description   Spoiler ARM/DISARM + Auto Brake with full mode cycling (RTO, DISARM, 1, 2, 3, 4, MAX) Thanks to Speedbird for suggesting brake levels and new visuals. Publishing an edited version of this is not allowed.
 // ==/UserScript==
@@ -113,14 +113,6 @@
         const inst = geofs.aircraft.instance;
 
         // -------------------------------
-        // AIRBORNE
-        // -------------------------------
-        if (!inst.groundContact) {
-            if (isAutoBrakeArmed) controls.brakes = 0; // reset only if auto brake is armed
-            return;
-        }
-
-        // -------------------------------
         // DISARM MODE → MANUAL BRAKING
         // -------------------------------
         if (!isAutoBrakeArmed) {
@@ -148,75 +140,18 @@
 
             // HOLD MAX BRAKES IF ACTIVE
             if (rtoActive) {
-                if (geofs.aircraft.instance.id === "4") {
-                    brakeAmount = 4.19;
-                }
-                if (geofs.aircraft.instance.id === "25") {
-                    brakeAmount = 3.3;
-                }
-                if (geofs.aircraft.instance.id === "24" || geofs.aircraft.instance.id === "10") {
-                    brakeAmount = 2.5;
-                }
-                const ins2ID = geofs.aircraft.instance.id
-                if (ins2ID !== "10" && ins2ID !== "24" && ins2ID !== "25" && ins2ID !== "4") {
-                    brakeAmount = 3.3
-                }
-                // RELEASE RTO BELOW 1m/s
-                if (inst.groundSpeed < 1) {
-                    rtoActive = false;
-                    console.log("[AUTO BRK] RTO RELEASED");
-                }
+                brakeAmount = 1;
             }
         }
 
         if (!rtoActive) {
-            if (geofs.aircraft.instance.id === "4") {
-                switch (mode) {
-                    case "1": brakeAmount = 1.19; break;
-                    case "2": brakeAmount = 1.49; break;
-                    case "3": brakeAmount = 2.15; break;
-                    case "4": brakeAmount = 2.99; break;
-                    case "MAX": brakeAmount = 4.19; break;
-                }
+            switch (mode) {
+                case "1": brakeAmount = 0.2; break;
+                case "2": brakeAmount = 0.4; break;
+                case "3": brakeAmount = 0.6; break;
+                case "4": brakeAmount = 0.8; break;
+                case "MAX": brakeAmount = 1; break;
             }
-            if (geofs.aircraft.instance.id === "25") {
-                switch (mode) {
-                    case "1": brakeAmount = 1.2; break;
-                    case "2": brakeAmount = 1.5; break;
-                    case "3": brakeAmount = 1.8; break;
-                    case "4": brakeAmount = 2.1; break;
-                    case "MAX": brakeAmount = 3.3; break;
-                }
-            }
-            if (geofs.aircraft.instance.id === "24") {
-                switch (mode) {
-                    case "1": brakeAmount = 0; break;
-                    case "2": brakeAmount = 0; break;
-                    case "3": brakeAmount = 1; break;
-                    case "4": brakeAmount = 1.3; break;
-                    case "MAX": brakeAmount = 2.5; break;
-                }
-            }
-            if (geofs.aircraft.instance.id === "10") {
-                switch (mode) {
-                    case "1": brakeAmount = 0; break;
-                    case "2": brakeAmount = 1; break;
-                    case "3": brakeAmount = 1.17; break;
-                    case "4": brakeAmount = 1.74; break;
-                    case "MAX": brakeAmount = 2.5; break;
-                }
-            }
-            const insID = geofs.aircraft.instance.id
-            if (insID !== "10" && insID !== "24" && insID !== "25" && insID !== "4") {
-                switch (mode) {
-                    case "1": brakeAmount = 1.2; break;
-                    case "2": brakeAmount = 1.5; break;
-                    case "3": brakeAmount = 1.8; break;
-                    case "4": brakeAmount = 2.1; break;
-                    case "MAX": brakeAmount = 3.3; break;
-                }
-            }
-        }
 
         controls.brakes = brakeAmount;
 
@@ -384,7 +319,7 @@
 
         // Keep the original "loaded" notification
         showNotification("SPLR ARM & AUTO BRK Loaded!", "info", 4000);
-        console.log("[SCRIPT] Full realistic system online. V6.5");
+        console.log("[SCRIPT] Full realistic system online. V7.5");
     }
 
     init();
