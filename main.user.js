@@ -5,7 +5,7 @@
 // @updateURL     https://github.com/Ahmd-Tint/GeoFS-SPLR-ARM-AUTO-BRK/raw/refs/heads/main/main.user.js
 // @downloadURL   https://github.com/Ahmd-Tint/GeoFS-SPLR-ARM-AUTO-BRK/raw/refs/heads/main/main.user.js
 // @grant         none
-// @version       7.5
+// @version       8.6
 // @author        Ahmd-Tint
 // @description   Spoiler ARM/DISARM + Auto Brake with full mode cycling (RTO, DISARM, 1, 2, 3, 4, MAX) Thanks to Speedbird for suggesting brake levels and new visuals. Publishing an edited version of this is not allowed.
 // ==/UserScript==
@@ -152,6 +152,7 @@
                 case "4": brakeAmount = 0.8; break;
                 case "MAX": brakeAmount = 1; break;
             }
+        }
 
         controls.brakes = brakeAmount;
 
@@ -275,6 +276,44 @@
         }, 500); // Check every 500ms for visibility changes
     }
 
+    function autoDisarm() {
+        const animm = geofs.aircraft.instance.animationValue;
+        const splrMode = animm.spoilerArming;
+        const brkMode = autoBrakeModes[autoBrakeIndex];
+        const airBP = controls.airbrakes.position;
+
+        // Determine how much brake force auto-brakes are currently applying
+        let expectedAutoBrake = 0;
+        switch (brkMode) {
+            case "RTO": expectedAutoBrake = rtoActive ? 1 : 0; break;
+            case "1": expectedAutoBrake = 0.2; break;
+            case "2": expectedAutoBrake = 0.4; break;
+            case "3": expectedAutoBrake = 0.6; break;
+            case "4": expectedAutoBrake = 0.8; break;
+            case "MAX": expectedAutoBrake = 1; break;
+            default: expectedAutoBrake = 0; break;
+        }
+
+        // Manual brakes are applied only if the pilot presses harder than auto-brake
+        const manualBrakeApplied = controls.brakes > expectedAutoBrake;
+
+        // Auto-disarm if manual brakes detected
+        if (brkMode !== "DISARM" && manualBrakeApplied) {
+            autoBrakeIndex = autoBrakeModes.indexOf("DISARM");
+            isAutoBrakeArmed = false;
+            rtoActive = false;
+            updateAbrkOverlay();
+            console.log("[AUTO BRK] Auto-DISARM (Manual brakes applied)");
+        }
+
+        // Auto-disarm spoilers if fully deployed
+        if (splrMode === 1 && airBP === 1) {
+            animm.spoilerArming = 0;
+            updateSplrOverlay();
+            console.log("[SPLR] Auto-DISARM (Brakes held or Spoilers deployed)");
+        }
+    }
+
     // INIT
     async function init() {
         await waitForGeoFS();
@@ -301,6 +340,7 @@
 
         // Run the touchdown logic periodically
         setInterval(checkTouchdownLogic, 100);
+        setInterval(autoDisarm, 50);
 
         // Key bindings
         document.addEventListener("keydown", e => {
@@ -319,7 +359,7 @@
 
         // Keep the original "loaded" notification
         showNotification("SPLR ARM & AUTO BRK Loaded!", "info", 4000);
-        console.log("[SCRIPT] Full realistic system online. V7.5");
+        console.log("[SCRIPT] Full realistic system online. V8.6");
     }
 
     init();
