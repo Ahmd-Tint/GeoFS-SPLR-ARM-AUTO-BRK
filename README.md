@@ -70,18 +70,14 @@ Contact me via Discord: [Discord Server](https://discord.gg/MF5M5cAuS3)
 * V3.3: Instead of notifications, added the following. "RTO" changes depending on the current auto-brake mode. (Speedbird came up with this realistic idea!)
 <img width="66" height="115" alt="image" src="https://github.com/user-attachments/assets/a67db3ac-cef9-41d7-baf7-601a3ded2ee2" />
 
-* V4.3: The default brake force is now the B737-700 setting when an unsupported aircraft is used.
 * V5.3: Fixed auto-brake RTO brake strength (after rejecting takeoff)
-* V6.4:
-  The Auto Brake system now uses unique, tuned brake force values for more aircraft.
-  * **New Supported Aircraft:** Added custom brake profiles for:
-    * **Boeing 777-300ER**
-    * **Airbus A350-900**
-    * **Airbus A380-800**
-  * **Default Brake Force Update:** When flying an aircraft without a specific profile, the system will now default to using the brake force values of the ***Boeing 777-300ER***.
-  * The RTO mode's issues have been improved.
 * V6.5:
   * **Instrument Visibility Integration:** Overlays now automatically hide/show based on GeoFS instrument panel visibility
   * When you hide instruments in GeoFS, the custom overlays (SPLR ARM and ABRK) will also hide
   * When you show instruments again, the overlays reappear if their systems are active
 * V7.5: Adjusted brake force since it was too high.
+* V8.6:
+  * When you brake manually: Autobrakes will switch to "DISARM"
+  * When you deploy spoilers/airbrakes manually: Spoiler Arming will switch to "DISARM"
+  * +1.0..: V8.5.
+  * V7.5: Code wasn't working. +0.1..: V8.6.
