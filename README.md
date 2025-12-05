@@ -81,3 +81,4 @@ Contact me via Discord: [Discord Server](https://discord.gg/MF5M5cAuS3)
   * When you deploy spoilers/airbrakes manually: Spoiler Arming will switch to "DISARM"
   * +1.0..: V8.5.
   * V7.5: Code wasn't working. +0.1..: V8.6.
+* V8.7: RTO mode should be working now, improved the autoDisarm function.
