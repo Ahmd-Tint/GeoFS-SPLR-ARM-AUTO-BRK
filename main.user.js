@@ -1,43 +1,58 @@
 // ==UserScript==
-// @name          SPLR ARM & AUTO BRK
-// @namespace     http://tampermonkey.net/
-// @match         https://*.geo-fs.com/*
+// @name          SPLR ARM & AUTO BRK
+// @namespace     http://tampermonkey.net/
+// @match         https://*.geo-fs.com/*
 // @updateURL     https://github.com/Ahmd-Tint/GeoFS-SPLR-ARM-AUTO-BRK/raw/refs/heads/main/main.user.js
 // @downloadURL   https://github.com/Ahmd-Tint/GeoFS-SPLR-ARM-AUTO-BRK/raw/refs/heads/main/main.user.js
-// @grant         none
-// @version       8.6
-// @author        Ahmd-Tint
-// @description   Spoiler ARM/DISARM + Auto Brake with full mode cycling (RTO, DISARM, 1, 2, 3, 4, MAX) Thanks to Speedbird for suggesting brake levels and new visuals. Publishing an edited version of this is not allowed.
+// @grant         none
+// @version       8.7
+// @author        Ahmd-Tint
+// @description   Spoiler ARM/DISARM + Auto Brake with full mode cycling (RTO, DISARM, 1, 2, 3, 4, MAX).
 // ==/UserScript==
-
-
 
 (function () {
     'use strict';
 
-    // AUTOBRAKE MODES
-    const autoBrakeModes = ["RTO", "DISARM", "1", "2", "3", "4", "MAX"];
-    let autoBrakeIndex = 0; // default = RTO
+    const DEBUG = false;
+    const CHECK_INTERVAL_MS = 50;
 
+    const autoBrakeModes = ["RTO", "DISARM", "1", "2", "3", "4", "MAX"];
+    let autoBrakeIndex = 0;
     let isAutoBrakeArmed = true;
 
-    // RTO LATCH FLAG
+
     let rtoActive = false;
 
-    // Custom overlay elements
+
+    let deployedThisLanding = false;
+
+
     let splrOverlay = null;
     let abrkOverlay = null;
 
-    // NOTIFICATION (kept for other messages)
-    function showNotification(msg, type = "info", timeout = 3000) {
-        if (window.geofs?.utils?.notification) {
-            window.geofs.utils.notification.show(msg, { timeout, type });
-        } else if (window.ui?.notification) {
-            window.ui.notification.show(msg, { timeout, type });
-        }
+
+    function log(...args) {
+        if (DEBUG) console.log('[SPLR/ABRK]', ...args);
+    }
+    function info(...args) {
+        console.log('[SPLR/ABRK]', ...args);
+    }
+    function warn(...args) {
+        console.warn('[SPLR/ABRK]', ...args);
     }
 
-    // WAIT FOR GEOFS LOADING
+
+    function showNotification(msg, type = "info", timeout = 3000) {
+        try {
+            if (window.geofs?.utils?.notification) {
+                window.geofs.utils.notification.show(msg, { timeout, type });
+            } else if (window.ui?.notification) {
+                window.ui.notification.show(msg, { timeout, type });
+            }
+        } catch (e) { return;; }
+    }
+
+
     async function waitForGeoFS() {
         return new Promise(resolve => {
             const interval = setInterval(() => {
@@ -49,37 +64,36 @@
         });
     }
 
-    // Check if instruments are visible
+
     function areInstrumentsVisible() {
         try {
-            // Check window.instruments.visible
             if (window.instruments && typeof window.instruments.visible !== 'undefined') {
                 return window.instruments.visible;
             }
-            // Fallback: check if instruments exist and are visible
-            return true; // default to visible if we can't determine
+            return true;
         } catch (e) {
-            console.error("[SPLR/ABRK] Error checking instrument visibility:", e);
-            return true; // default to visible on error
+            log("Error checking instruments visibility:", e);
+            return true;
         }
     }
 
-    // SPOILER ARM TOGGLE
+
     const toggleSpoilerArm = () => {
-        const inst = geofs.aircraft.instance;
-        if (inst.animationValue.spoilerArming === undefined)
-            inst.animationValue.spoilerArming = 0;
+        try {
+            const inst = geofs.aircraft.instance;
+            geofs.aircraft.instance.animationValue = geofs.aircraft.instance.animationValue || {};
+            if (inst.animationValue.spoilerArming === undefined)
+                inst.animationValue.spoilerArming = 0;
 
-        // toggle between 0 and 1
-        inst.animationValue.spoilerArming = inst.animationValue.spoilerArming === 0 ? 1 : 0;
-
-        // Update custom overlay
-        updateSplrOverlay();
-
-        console.log(`[SPLR ARM] now = ${inst.animationValue.spoilerArming ? "ARMED" : "DISARMED"}`);
+            inst.animationValue.spoilerArming = inst.animationValue.spoilerArming === 0 ? 1 : 0;
+            updateSplrOverlay();
+            info(`SPLR ARM = ${inst.animationValue.spoilerArming ? "ARMED" : "DISARMED"}`);
+        } catch (e) {
+            warn("toggleSpoilerArm error", e);
+        }
     };
 
-    // Provide a control setter for compatibility with other scripts/UI
+
     function registerSpoilerSetter() {
         try {
             controls.setters = controls.setters || {};
@@ -88,97 +102,142 @@
                 set: toggleSpoilerArm
             };
         } catch (e) {
-            // ignore if controls isn't ready
+            return;
         }
     }
 
-    // AUTOBRAKE MODE CYCLE
+
     const toggleAutoBrake = () => {
         autoBrakeIndex = (autoBrakeIndex + 1) % autoBrakeModes.length;
         const mode = autoBrakeModes[autoBrakeIndex];
 
         isAutoBrakeArmed = mode !== "DISARM";
 
-        // When switching to DISARM, release RTO latch
+
         if (!isAutoBrakeArmed) rtoActive = false;
 
-        // Update custom overlay
+
         updateAbrkOverlay();
 
-        console.log(`[AUTO BRK] Mode = ${mode}`);
+        info(`Mode = ${mode}`);
     };
 
-    // MAIN AUTOBRAKE + SPOILER LOGIC
+
+    function isOnGround(inst) {
+        try {
+            if (!inst) return false;
+            const gc = inst.groundContact;
+            if (Array.isArray(gc)) {
+                return gc.some(x => x === true);
+            } else {
+                return gc === true;
+            }
+        } catch (e) {
+            return !!(inst && inst.groundContact);
+        }
+    }
+
+
     const checkTouchdownLogic = () => {
-        const inst = geofs.aircraft.instance;
+        try {
+            const inst = geofs.aircraft.instance;
+            if (!inst) return;
 
-        // -------------------------------
-        // DISARM MODE → MANUAL BRAKING
-        // -------------------------------
-        if (!isAutoBrakeArmed) {
-            return; // do not touch brakes, allow pilot full control
-        }
+            const onGround = isOnGround(inst);
+            const armed = inst.animationValue && inst.animationValue.spoilerArming === 1;
 
-        const mode = autoBrakeModes[autoBrakeIndex];
-        let brakeAmount = 0;
 
-        // -------------------------------
-        // RTO MODE WITH REALISTIC BEHAVIOR
-        // -------------------------------
-        if (mode === "RTO") {
+            if (armed && onGround && !deployedThisLanding) {
+                deployedThisLanding = true;
+                info('Touchdown detected — deploying spoilers');
 
-            // TRIGGER RTO IF THRUST → IDLE at >36 m/s
-            if (
-                !rtoActive &&
-                inst.groundSpeed > 44 &&             // >85 knots
-                controls.throttle === 0 &&          // throttle pulled idle
-                inst.groundContact
-            ) {
-                rtoActive = true;
-                console.log("[AUTO BRK] RTO ACTIVATED");
+                try {
+                    if (controls && controls.airbrakes) {
+
+                        if (typeof controls.airbrakes.position === 'number' && controls.airbrakes.position < 1) {
+                            window.controls.airbrakes.target = 1;
+
+                            log('Set airbrakes.target=1 and position=1');
+                        } else {
+
+                            controls.airbrakes.target = 1;
+                            log('Airbrakes position already >=1, set target=1');
+                        }
+
+
+                        if (typeof controls.setPartAnimationDelta === "function") {
+                            try {
+                                controls.setPartAnimationDelta(controls.airbrakes);
+                                log('Called setPartAnimationDelta');
+                            } catch (e) {
+                                log('setPartAnimationDelta threw', e);
+                            }
+                        }
+                    } else {
+                        warn('controls.airbrakes not found at deploy');
+                    }
+                } catch (e) {
+                    warn('Error during spoiler deploy', e);
+                }
+
+                updateSplrOverlay();
+                info('Spoilers deployment attempted.');
             }
 
-            // HOLD MAX BRAKES IF ACTIVE
-            if (rtoActive) {
-                brakeAmount = 1;
+
+            if (!onGround && deployedThisLanding) {
+                deployedThisLanding = false;
+                log('Airborne again — reset deployedThisLanding flag');
             }
-        }
 
-        if (!rtoActive) {
-            switch (mode) {
-                case "1": brakeAmount = 0.2; break;
-                case "2": brakeAmount = 0.4; break;
-                case "3": brakeAmount = 0.6; break;
-                case "4": brakeAmount = 0.8; break;
-                case "MAX": brakeAmount = 1; break;
+
+            if (!isAutoBrakeArmed) {
+
+                return;
             }
-        }
 
-        controls.brakes = brakeAmount;
 
-        if (
-            inst.animationValue.spoilerArming === 1 &&
-            inst.groundContact
-        ) {
-            if (controls.airbrakes.position === 0) {
-                // Deploy spoilers
-                controls.airbrakes.target = 1;
-                if (typeof controls.setPartAnimationDelta === "function") {
-                    controls.setPartAnimationDelta(controls.airbrakes);
+            const mode = autoBrakeModes[autoBrakeIndex] || "DISARM";
+            let brakeAmount = 0;
+
+            if (mode === "RTO") {
+
+                if (!rtoActive && inst.groundSpeed > 44 && controls.throttle === 0 && onGround) {
+                    rtoActive = true;
+                    info('RTO ACTIVATED');
+                }
+                if (rtoActive) {
+                    brakeAmount = 1;
                 }
             }
 
-            // Update overlay
-            updateSplrOverlay();
+            if (!rtoActive) {
+                switch (mode) {
+                    case "1": brakeAmount = 0.2; break;
+                    case "2": brakeAmount = 0.4; break;
+                    case "3": brakeAmount = 0.6; break;
+                    case "4": brakeAmount = 0.8; break;
+                    case "MAX": brakeAmount = 1; break;
+                    default: brakeAmount = 0; break;
+                }
+            }
 
-            console.log("[SPLR ARM] Spoilers deployed on touchdown.");
+
+            try {
+                controls.brakes = brakeAmount;
+            } catch (e) {
+                log('Unable to set controls.brakes', e);
+            }
+
+        } catch (e) {
+            console.error('[SPLR/ABRK] checkTouchdownLogic fatal error', e);
         }
     };
 
-    // Create custom HTML overlays (completely separate from GeoFS instruments)
+
     function createCustomOverlays() {
         try {
-            // Create SPLR ARM overlay
+
             splrOverlay = document.createElement('div');
             splrOverlay.style.cssText = `
                 position: fixed;
@@ -201,7 +260,7 @@
             splrOverlay.innerHTML = 'SPLR<br/>ARM';
             document.body.appendChild(splrOverlay);
 
-            // Create ABRK overlay
+
             abrkOverlay = document.createElement('div');
             abrkOverlay.style.cssText = `
                 position: fixed;
@@ -226,141 +285,116 @@
 
             console.log("[SPLR/ABRK] Custom overlays created.");
         } catch (e) {
-            console.error("[SPLR/ABRK] Error creating overlays:", e);
+            console.error('[SPLR/ABRK] Error creating overlays:', e);
         }
     }
 
-    // Update SPLR overlay
+
     function updateSplrOverlay() {
         if (!splrOverlay) return;
         try {
             const inst = geofs.aircraft.instance;
             const instrumentsVisible = areInstrumentsVisible();
+            const armed = inst && inst.animationValue && inst.animationValue.spoilerArming === 1;
 
-            // Show only if armed AND instruments are visible
-            if (inst.animationValue.spoilerArming === 1 && instrumentsVisible) {
+            if (armed && instrumentsVisible) {
                 splrOverlay.style.display = 'block';
             } else {
                 splrOverlay.style.display = 'none';
             }
         } catch (e) {
-            // ignore
+            return;
         }
     }
 
-    // Update ABRK overlay
+
     function updateAbrkOverlay() {
         if (!abrkOverlay) return;
         try {
             const mode = autoBrakeModes[autoBrakeIndex];
             abrkOverlay.innerHTML = `ABRK<br/>${mode}`;
-
             const instrumentsVisible = areInstrumentsVisible();
 
-            // Hide if DISARM OR instruments not visible
             if (mode === "DISARM" || !instrumentsVisible) {
                 abrkOverlay.style.display = 'none';
             } else {
                 abrkOverlay.style.display = 'block';
             }
         } catch (e) {
-            // ignore
+            return;
         }
     }
 
-    // Monitor instrument visibility changes
+
     function startVisibilityMonitor() {
         setInterval(() => {
             updateSplrOverlay();
             updateAbrkOverlay();
-        }, 500); // Check every 500ms for visibility changes
+        }, 500);
     }
+
 
     function autoDisarm() {
-        const animm = geofs.aircraft.instance.animationValue;
-        const splrMode = animm.spoilerArming;
-        const brkMode = autoBrakeModes[autoBrakeIndex];
-        const airBP = controls.airbrakes.position;
-
-        // Determine how much brake force auto-brakes are currently applying
-        let expectedAutoBrake = 0;
-        switch (brkMode) {
-            case "RTO": expectedAutoBrake = rtoActive ? 1 : 0; break;
-            case "1": expectedAutoBrake = 0.2; break;
-            case "2": expectedAutoBrake = 0.4; break;
-            case "3": expectedAutoBrake = 0.6; break;
-            case "4": expectedAutoBrake = 0.8; break;
-            case "MAX": expectedAutoBrake = 1; break;
-            default: expectedAutoBrake = 0; break;
-        }
-
-        // Manual brakes are applied only if the pilot presses harder than auto-brake
-        const manualBrakeApplied = controls.brakes > expectedAutoBrake;
-
-        // Auto-disarm if manual brakes detected
-        if (brkMode !== "DISARM" && manualBrakeApplied) {
-            autoBrakeIndex = autoBrakeModes.indexOf("DISARM");
-            isAutoBrakeArmed = false;
-            rtoActive = false;
-            updateAbrkOverlay();
-            console.log("[AUTO BRK] Auto-DISARM (Manual brakes applied)");
-        }
-
-        // Auto-disarm spoilers if fully deployed
-        if (splrMode === 1 && airBP === 1) {
-            animm.spoilerArming = 0;
-            updateSplrOverlay();
-            console.log("[SPLR] Auto-DISARM (Brakes held or Spoilers deployed)");
+        try {
+            const brkMode = autoBrakeModes[autoBrakeIndex];
+            if (!brkMode || brkMode === "DISARM") return;
+            const b = controls.brakes || 0;
+            const thresholds = { "1": 0.21, "2": 0.41, "3": 0.61, "4": 0.81 };
+            if (thresholds[brkMode] && b > thresholds[brkMode]) {
+                autoBrakeIndex = autoBrakeModes.indexOf("DISARM");
+                isAutoBrakeArmed = false;
+                rtoActive = false;
+                updateAbrkOverlay();
+                info('AutoBrake auto-disarmed due to pilot braking');
+            }
+        } catch (e) {
+            log('autoDisarm error', e);
         }
     }
 
-    // INIT
+
     async function init() {
         await waitForGeoFS();
 
-        // register setter in case instruments or UI or other scripts call it
+
         registerSpoilerSetter();
 
-        // Ensure spoilerArming exists at start
+
         try {
             geofs.aircraft.instance.animationValue = geofs.aircraft.instance.animationValue || {};
             if (geofs.aircraft.instance.animationValue.spoilerArming === undefined)
                 geofs.aircraft.instance.animationValue.spoilerArming = 0;
-        } catch (e) { /* ignore */ }
+        } catch (e) { return; }
 
-        // Create custom overlays (not using GeoFS instrument system at all)
+
         createCustomOverlays();
-
-        // Initial overlay states
         updateSplrOverlay();
         updateAbrkOverlay();
-
-        // Start monitoring visibility
         startVisibilityMonitor();
 
-        // Run the touchdown logic periodically
-        setInterval(checkTouchdownLogic, 100);
+
+        setInterval(checkTouchdownLogic, CHECK_INTERVAL_MS);
         setInterval(autoDisarm, 50);
 
-        // Key bindings
+
         document.addEventListener("keydown", e => {
-            // Shift + /  (Shift + '?') -> toggle spoiler arming
+
             if (e.shiftKey && (e.key === "?" || e.keyCode === 191)) {
                 e.preventDefault();
                 toggleSpoilerArm();
             }
 
-            // Ctrl + F11 -> toggle autobrake modes
+
             if (e.ctrlKey && e.key === "F11") {
                 e.preventDefault();
                 toggleAutoBrake();
             }
         });
 
-        // Keep the original "loaded" notification
-        showNotification("SPLR ARM & AUTO BRK Loaded!", "info", 4000);
-        console.log("[SCRIPT] Full realistic system online. V8.6");
+        showNotification("SPLR ARM & AUTO BRK Loaded! (v8.7)", "info", 4000);
+        info('Full realistic system online. V8.7');
     }
 
     init();
+
 })();
