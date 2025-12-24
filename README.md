@@ -63,7 +63,7 @@ This project is released under the **Creative Commons Attribution-NoDerivatives 
 
 Contact me via Discord: [Discord Server](https://discord.gg/MF5M5cAuS3)
 
-## Changelogs (for nerds only)
+## Changelogs
 
 * V1: Initial Release (GeoFS is missing the features this addon includes, that's why it was made)
 * V2.2 Added levels of braking. (Speedbird came up with this realistic idea!)
@@ -82,3 +82,6 @@ Contact me via Discord: [Discord Server](https://discord.gg/MF5M5cAuS3)
   * +1.0..: V8.5.
   * V7.5: Code wasn't working. +0.1..: V8.6.
 * V8.7: RTO mode should be working now, improved the autoDisarm function.
+* V8.8: Realistic Spoiler System:
+ * When armed && ground contact && spoiler deployed: If disarmed: Automatically retracts spoilers.
+ * When armed and you deploy spoilers airborne. They'll be disarmed automatically. Irl you can't arm and deploy spoilers at the same time when airborne.
